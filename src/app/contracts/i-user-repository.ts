@@ -1,13 +1,7 @@
-import User from "@/entities/user";
+import User from "@/entities/User";
 
 export default interface UserRepository {
   create({ user }: { user: User }): Promise<User>;
 
-  getById(userId: number): Promise<User | null>;
-
-  delete(userId: number): Promise<void>;
-
-  getAll(): Promise<User[]>;
-
-  update(user: User): Promise<User>;
+  getByNick(nick: string): Promise<User | null>;
 }

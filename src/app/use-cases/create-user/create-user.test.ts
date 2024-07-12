@@ -1,48 +1,37 @@
+import User from "@/entities/User";
+import CreateUser from ".";
 import UserRepositoryInMemory from "@/externals/database/in-memory/user-repository-in-memory";
-import CreateUser from "./create-user";
 
 describe("CreateUser", () => {
-  it("creates a user", async () => {
-    const user = { name: "Testevaldo Silva", email: "testevaldo@gmail.com" };
+  it("creates a new user", async () => {
+    const nick = "r20";
+    const memoryRepository = new UserRepositoryInMemory();
 
-    const persistedUser = await CreateUser.execute({
-      user,
-      userRepository: new UserRepositoryInMemory(),
+    const user = await CreateUser.execute({
+      nick,
+      userRepository: memoryRepository,
     });
 
-    expect(persistedUser).toMatchObject({
-      id: 1,
-      name: "Testevaldo Silva",
-      email: "testevaldo@gmail.com",
-    });
-    expect(persistedUser).toHaveProperty("createdAt");
+    expect(user).toBeInstanceOf(User);
+    expect(user.id).toBeDefined();
   });
 
-  describe("validating fields", () => {
-    it("throws an error when name is invalid", async () => {
-      const user = { name: "", email: "testevaldo@gmail.com" };
+  it("throws a new error when nick is already used", async () => {
+    const nick = "r20";
+    const memoryRepository = new UserRepositoryInMemory();
 
-      try {
-        await CreateUser.execute({
-          user,
-          userRepository: new UserRepositoryInMemory(),
-        });
-      } catch (error: any) {
-        expect(error.message).toEqual("Name is invalid");
-      }
+    await CreateUser.execute({
+      nick,
+      userRepository: memoryRepository,
     });
 
-    it("throws an error when email is invalid", async () => {
-      const user = { name: "Testevaldo Silva", email: "" };
-
-      try {
-        await CreateUser.execute({
-          user,
-          userRepository: new UserRepositoryInMemory(),
-        });
-      } catch (error: any) {
-        expect(error.message).toEqual("Email is invalid");
-      }
-    });
+    try {
+      await CreateUser.execute({
+        nick,
+        userRepository: memoryRepository,
+      });
+    } catch (error: any) {
+      expect(error.message).toEqual("Nick is already used");
+    }
   });
 });

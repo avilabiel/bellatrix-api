@@ -1,46 +1,26 @@
-import User, { UserRepository } from "@/entities/user";
+import { uuid } from "uuidv4";
+import User from "@/entities/User";
+import UserRepository from "@/app/contracts/i-user-repository";
 
 export default class UserRepositoryInMemory implements UserRepository {
   private users: User[] = [];
 
   create({ user }: { user: User }): Promise<User> {
-    user.id = this.users.length + 1;
+    user.id = uuid();
     user.createdAt = new Date();
 
     this.users.push(user);
 
-    return Promise.resolve(user);
+    return Promise.resolve(new User(user));
   }
 
-  getById(userId: number): Promise<User | null> {
-    return Promise.resolve(
-      this.users.find((user) => user.id === userId) ?? null
-    );
-  }
+  getByNick(nick: string): Promise<User | null> {
+    const user = this.users.find((user) => user.nick === nick);
 
-  delete(userId: number): Promise<void> {
-    const userIndex = this.findUserIndexByUserId(userId);
+    if (user) {
+      return Promise.resolve(new User(user));
+    }
 
-    this.users.splice(userIndex, 1);
-
-    return Promise.resolve();
-  }
-
-  getAll(): Promise<User[]> {
-    return Promise.resolve(this.users);
-  }
-
-  update(user: User): Promise<User> {
-    const userIndex = this.findUserIndexByUserId(user.id);
-
-    const updatedUser = { ...this.users[userIndex], ...user };
-
-    this.users[userIndex] = updatedUser;
-
-    return Promise.resolve(updatedUser);
-  }
-
-  private findUserIndexByUserId(userId: number) {
-    return this.users.findIndex((user) => user.id === userId);
+    return Promise.resolve(null);
   }
 }

@@ -1,25 +1,74 @@
 import IUseCase from "@/app/contracts/i-use-case";
-import User, { UserRepository } from "@/entities/user";
+import UserRepository from "@/app/contracts/i-user-repository";
+import User from "@/entities/User";
 
 class CreateUser implements IUseCase {
   async execute({
-    user,
+    nick,
     userRepository,
   }: {
-    user: User;
+    nick: string;
     userRepository: UserRepository;
   }): Promise<User> {
-    if (!user.email || user.email.length === 0) {
-      throw new Error("Email is invalid");
+    const user = await userRepository.getByNick(nick);
+
+    if (user) {
+      throw new Error("Nick is already used");
     }
 
-    if (!user.name || user.name.length === 0) {
-      throw new Error("Name is invalid");
-    }
+    const userToCreate = this.buildUser(nick);
 
-    const persistedUser = await userRepository.create({ user });
+    return await userRepository.create({ user: userToCreate });
+  }
 
-    return persistedUser;
+  private buildUser(nick: string): User {
+    const images = [
+      "https://pbs.twimg.com/profile_images/1725495920840585217/rdF0kKid_400x400.jpg",
+      "https://i1.sndcdn.com/artworks-cGZzsSI3LHT0NyfC-CV1j9Q-t500x500.jpg",
+      "https://static.wikia.nocookie.net/tkoc/images/4/4b/Link_%28Ocarina_of_Time%29.png/revision/latest/scale-to-width-down/1200?cb=20140821114038&path-prefix=pt-br",
+    ];
+
+    return {
+      nick,
+      image: images[0],
+      character: {
+        level: 1,
+        hp: 20,
+        mp: 10,
+        xp: 0,
+        atk: {
+          min: 3,
+          max: 5,
+        },
+        spells: [
+          {
+            name: "Bola de fogo",
+            atk: {
+              min: 7,
+              max: 7,
+            },
+          },
+        ],
+        items: [
+          {
+            name: "Poção de HP",
+            result: {
+              hp: 10,
+              mp: 0,
+            },
+            quantity: 5,
+          },
+          {
+            name: "Poção de MP",
+            result: {
+              hp: 0,
+              mp: 10,
+            },
+            quantity: 2,
+          },
+        ],
+      },
+    };
   }
 }
 
