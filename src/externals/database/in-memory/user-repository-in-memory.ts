@@ -23,4 +23,14 @@ export default class UserRepositoryInMemory implements UserRepository {
 
     return Promise.resolve(null);
   }
+
+  getById(userId: string): Promise<User> {
+    const user = this.users.find((user) => user.id === userId);
+
+    if (user) {
+      return Promise.resolve(new User(user));
+    }
+
+    return Promise.resolve(null);
+  }
 }

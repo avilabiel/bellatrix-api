@@ -1,5 +1,5 @@
 import IUseCase from "@/app/contracts/i-use-case";
-import UserRepository from "@/app/contracts/i-user-repository";
+import IUserRepository from "@/app/contracts/i-user-repository";
 import User from "@/entities/User";
 
 class CreateUser implements IUseCase {
@@ -8,7 +8,7 @@ class CreateUser implements IUseCase {
     userRepository,
   }: {
     nick: string;
-    userRepository: UserRepository;
+    userRepository: IUserRepository;
   }): Promise<User> {
     const user = await userRepository.getByNick(nick);
 
