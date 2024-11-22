@@ -12,13 +12,17 @@ import {
   Param,
 } from "@nestjs/common";
 
+type CreateUserBody = {
+  nick: string;
+};
+
 @Controller("users")
 export class UserController {
   @Post()
-  async create(@Body() nick: string): Promise<User> {
+  async create(@Body() payload: CreateUserBody): Promise<User> {
     try {
       return await CreateUser.execute({
-        nick,
+        nick: payload.nick,
         userRepository: config.repositories.userRepository,
       });
     } catch (error) {

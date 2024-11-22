@@ -16,12 +16,12 @@ class CreateUser implements IUseCase {
       throw new Error("Nick is already used");
     }
 
-    const userToCreate = this.buildUser(nick);
+    const userToCreate = this.buildUserLevel1(nick);
 
     return await userRepository.create({ user: userToCreate });
   }
 
-  private buildUser(nick: string): User {
+  private buildUserLevel1(nick: string): User {
     const images = [
       "https://pbs.twimg.com/profile_images/1725495920840585217/rdF0kKid_400x400.jpg",
       "https://i1.sndcdn.com/artworks-cGZzsSI3LHT0NyfC-CV1j9Q-t500x500.jpg",
@@ -29,12 +29,14 @@ class CreateUser implements IUseCase {
     ];
 
     return {
-      nick,
-      image: images[0],
+      nick: nick,
+      image: images[Math.floor(Math.random() * images.length)],
       character: {
         level: 1,
         hp: 20,
         mp: 10,
+        maxHp: 20,
+        maxMp: 10,
         xp: 0,
         atk: {
           min: 3,
@@ -47,6 +49,7 @@ class CreateUser implements IUseCase {
               min: 7,
               max: 7,
             },
+            mpCost: 10,
           },
         ],
         items: [
