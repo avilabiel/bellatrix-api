@@ -10,7 +10,9 @@ import {
   HttpException,
   Get,
   Param,
+  Res,
 } from "@nestjs/common";
+import { Response } from "express";
 
 type CreateUserBody = {
   nick: string;
@@ -38,9 +40,9 @@ export class UserController {
   }
 
   @Post(":id/walk")
-  async userWalk(@Param("id") userId): Promise<any> {
+  async userWalk(@Param("id") userId, @Res() res: Response): Promise<any> {
     try {
-      return await UserWalk.execute({
+      const battleOrNothing = await UserWalk.execute({
         userId,
         mapId: "1234",
         x: 1,
@@ -48,8 +50,13 @@ export class UserController {
         // mapRepository,
         userRepository: config.repositories.userRepository,
       });
+
+      return res.status(HttpStatus.OK).json(battleOrNothing);
     } catch (error) {
-      console.log(error);
+      if (error.message.includes("User not found")) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      }
+
       throw new HttpException(
         "Internal server error",
         HttpStatus.INTERNAL_SERVER_ERROR

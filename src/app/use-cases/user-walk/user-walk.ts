@@ -1,6 +1,9 @@
 import IMapRepository from "@/app/contracts/i-map-repository";
 import IUseCase from "@/app/contracts/i-use-case";
 import IUserRepository from "@/app/contracts/i-user-repository";
+import Battle from "@/entities/Battle";
+import Monster from "@/entities/Monster";
+import User from "@/entities/User";
 
 class UserWalk implements IUseCase {
   async execute({
@@ -18,11 +21,11 @@ class UserWalk implements IUseCase {
     // mapRepository: IMapRepository;
     userRepository: IUserRepository;
   }): Promise<any> {
-    // const user = await userRepository.getById(userId);
+    const user = await userRepository.getById(userId);
 
-    // if (!user) {
-    //   throw new Error("User not found");
-    // }
+    if (!user) {
+      throw new Error("User not found");
+    }
 
     // const gameMap = await mapRepository.getById(mapId);
 
@@ -30,7 +33,21 @@ class UserWalk implements IUseCase {
     //   throw new Error("Map not found");
     // }
 
-    // calcs chance to get a battle
+    const { shouldGoToBattle, selectedMonster } = this.shouldGoToBattle();
+
+    if (!shouldGoToBattle) {
+      return;
+    }
+
+    const battle = this.buildBattle(user);
+    return battle;
+  }
+
+  // Todo: receive monsters from map
+  private shouldGoToBattle(): {
+    shouldGoToBattle: boolean;
+    selectedMonster: string;
+  } {
     const monsters = [
       { name: "rat", spawnChance: 0.3 },
       { name: "goblin", spawnChance: 0.2 },
@@ -52,14 +69,41 @@ class UserWalk implements IUseCase {
 
       if (rand <= 0) {
         shouldGoToBattle = true;
-        selectedMonster = monsters[count];
+        selectedMonster = monsters[count].name;
         break;
       }
 
       count++;
     }
 
-    return { battle: shouldGoToBattle, selectedMonster };
+    return { shouldGoToBattle, selectedMonster };
+  }
+
+  private async buildBattle(user: User): Promise<Battle> {
+    const rat = new Monster({
+      id: "1234-token",
+      name: "Rat",
+      image: "https://cdn.vectorstock.com/i/1000v/01/10/rat-vector-2370110.jpg",
+      level: 1,
+      hp: 20,
+      mp: 0,
+      maxHp: 20,
+      maxMp: 0,
+      xp: 10,
+      atk: {
+        min: 1,
+        max: 3,
+      },
+      spawnChance: 0.5,
+      createdAt: new Date(),
+    });
+
+    return new Battle({
+      user,
+      monster: rat,
+      events: [],
+      startedAt: new Date(),
+    });
   }
 }
 
