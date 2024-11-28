@@ -37,7 +37,10 @@ export default class MonsterRepositoryInMemory implements MonsterRepository {
       },
       spawnChance: 0.2,
       createdAt: new Date(),
-    }
+    },
   ];
-  
+
+  list(): Promise<Monster[]> {
+    return Promise.resolve(this.monsters);
+  }
 }

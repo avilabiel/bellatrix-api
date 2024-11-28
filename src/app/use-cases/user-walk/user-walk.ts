@@ -1,6 +1,7 @@
 import IMapRepository from "@/app/contracts/i-map-repository";
 import IUseCase from "@/app/contracts/i-use-case";
 import IUserRepository from "@/app/contracts/i-user-repository";
+import IMonsterRepository from "@/app/contracts/i-monster-repository";
 import Battle from "@/entities/Battle";
 import Monster from "@/entities/Monster";
 import User from "@/entities/User";
@@ -12,6 +13,7 @@ class UserWalk implements IUseCase {
     x,
     y,
     // mapRepository,
+    monsterRepository,
     userRepository,
   }: {
     userId: string;
@@ -19,6 +21,7 @@ class UserWalk implements IUseCase {
     x: number;
     y: number;
     // mapRepository: IMapRepository;
+    monsterRepository: IMonsterRepository;
     userRepository: IUserRepository;
   }): Promise<any> {
     const user = await userRepository.getById(userId);
@@ -33,7 +36,9 @@ class UserWalk implements IUseCase {
     //   throw new Error("Map not found");
     // }
 
-    const { shouldGoToBattle, selectedMonster } = this.shouldGoToBattle();
+    const { shouldGoToBattle, selectedMonster } = await this.shouldGoToBattle(
+      monsterRepository
+    );
 
     if (!shouldGoToBattle) {
       return;
@@ -44,15 +49,10 @@ class UserWalk implements IUseCase {
   }
 
   // Todo: receive monsters from map
-  private shouldGoToBattle(): {
-    shouldGoToBattle: boolean;
-    selectedMonster: string;
-  } {
-    const monsters = [
-      { name: "rat", spawnChance: 0.3 },
-      { name: "goblin", spawnChance: 0.2 },
-    ];
-
+  private async shouldGoToBattle(
+    monsterRepository: IMonsterRepository
+  ): Promise<{ shouldGoToBattle: boolean; selectedMonster: string }> {
+    const monsters = await monsterRepository.list();
     let rand = Math.random(); // returns from 0 to 1
     // rand = 0.5 - rat.spawnChance => 0.2
     // rand = 0.2 - globin.spawnChance => 0 => BATTLE
@@ -78,7 +78,7 @@ class UserWalk implements IUseCase {
 
     return { shouldGoToBattle, selectedMonster };
   }
-
+  // REceber o monster como 2 parametro abaixo e tirar o rat daqui
   private async buildBattle(user: User): Promise<Battle> {
     const rat = new Monster({
       id: "1234-token",

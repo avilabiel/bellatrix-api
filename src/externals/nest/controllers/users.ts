@@ -48,6 +48,7 @@ export class UserController {
         x: 1,
         y: 1,
         // mapRepository,
+        monsterRepository: config.repositories.monsterRepository,
         userRepository: config.repositories.userRepository,
       });
 
