@@ -36,27 +36,24 @@ class UserWalk implements IUseCase {
     //   throw new Error("Map not found");
     // }
 
-    const { shouldGoToBattle, selectedMonster } = await this.shouldGoToBattle(
-      monsterRepository
-    );
+    const selectedMonster = await this.shouldGoToBattle(monsterRepository);
 
-    if (!shouldGoToBattle) {
+    if (!selectedMonster) {
       return;
     }
 
-    const battle = this.buildBattle(user);
+    const battle = this.buildBattle(user, selectedMonster);
     return battle;
   }
 
   // Todo: receive monsters from map
   private async shouldGoToBattle(
     monsterRepository: IMonsterRepository
-  ): Promise<{ shouldGoToBattle: boolean; selectedMonster: string }> {
+  ): Promise<Monster | null> {
     const monsters = await monsterRepository.list();
     let rand = Math.random(); // returns from 0 to 1
     // rand = 0.5 - rat.spawnChance => 0.2
     // rand = 0.2 - globin.spawnChance => 0 => BATTLE
-    let shouldGoToBattle = false;
     let selectedMonster = null;
     let count = 0;
 
@@ -68,39 +65,20 @@ class UserWalk implements IUseCase {
       rand -= monsters[count].spawnChance;
 
       if (rand <= 0) {
-        shouldGoToBattle = true;
-        selectedMonster = monsters[count].name;
+        selectedMonster = monsters[count];
         break;
       }
 
       count++;
     }
 
-    return { shouldGoToBattle, selectedMonster };
+    return selectedMonster;
   }
-  // REceber o monster como 2 parametro abaixo e tirar o rat daqui
-  private async buildBattle(user: User): Promise<Battle> {
-    const rat = new Monster({
-      id: "1234-token",
-      name: "Rat",
-      image: "https://cdn.vectorstock.com/i/1000v/01/10/rat-vector-2370110.jpg",
-      level: 1,
-      hp: 20,
-      mp: 0,
-      maxHp: 20,
-      maxMp: 0,
-      xp: 10,
-      atk: {
-        min: 1,
-        max: 3,
-      },
-      spawnChance: 0.5,
-      createdAt: new Date(),
-    });
 
+  private async buildBattle(user: User, monster: Monster): Promise<Battle> {
     return new Battle({
       user,
-      monster: rat,
+      monster,
       events: [],
       startedAt: new Date(),
     });
