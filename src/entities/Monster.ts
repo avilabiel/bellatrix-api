@@ -15,20 +15,7 @@ export default class Monster {
   spawnChance: number;
   createdAt?: Date;
 
-  constructor(props: {
-    id?: string;
-    name: string;
-    image: string;
-    level: number;
-    hp: number;
-    mp: number;
-    maxHp: number;
-    maxMp: number;
-    xp: number;
-    atk: { min: number; max: number };
-    spawnChance: number;
-    createdAt?: Date;
-  }) {
+  constructor(props: Monster) {
     this.id = props.id;
     this.name = props.name;
     this.image = props.image;
