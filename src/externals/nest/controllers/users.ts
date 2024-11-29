@@ -44,11 +44,10 @@ export class UserController {
     try {
       const battleOrNothing = await UserWalk.execute({
         userId,
-        mapId: "1234",
+        mapId: "1",
         x: 1,
         y: 1,
-        // mapRepository,
-        monsterRepository: config.repositories.monsterRepository,
+        mapRepository:config.repositories.mapRepository,
         userRepository: config.repositories.userRepository,
       });
 

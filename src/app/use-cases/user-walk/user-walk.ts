@@ -1,7 +1,6 @@
 import IMapRepository from "@/app/contracts/i-map-repository";
 import IUseCase from "@/app/contracts/i-use-case";
 import IUserRepository from "@/app/contracts/i-user-repository";
-import IMonsterRepository from "@/app/contracts/i-monster-repository";
 import Battle from "@/entities/Battle";
 import Monster from "@/entities/Monster";
 import User from "@/entities/User";
@@ -12,16 +11,14 @@ class UserWalk implements IUseCase {
     mapId,
     x,
     y,
-    // mapRepository,
-    monsterRepository,
+    mapRepository,
     userRepository,
   }: {
     userId: string;
     mapId: string;
     x: number;
     y: number;
-    // mapRepository: IMapRepository;
-    monsterRepository: IMonsterRepository;
+    mapRepository: IMapRepository;
     userRepository: IUserRepository;
   }): Promise<any> {
     const user = await userRepository.getById(userId);
@@ -30,13 +27,13 @@ class UserWalk implements IUseCase {
       throw new Error("User not found");
     }
 
-    // const gameMap = await mapRepository.getById(mapId);
+    const { name, monsters } = await mapRepository.getById(mapId);
 
-    // if (!gameMap) {
-    //   throw new Error("Map not found");
-    // }
+    if (!name) {
+      throw new Error("Map not found");
+    }
 
-    const selectedMonster = await this.shouldGoToBattle(monsterRepository);
+    const selectedMonster = await this.shouldGoToBattle(monsters);
 
     if (!selectedMonster) {
       return;
@@ -48,9 +45,8 @@ class UserWalk implements IUseCase {
 
   // Todo: receive monsters from map
   private async shouldGoToBattle(
-    monsterRepository: IMonsterRepository
+    monsters: Monster[]
   ): Promise<Monster | null> {
-    const monsters = await monsterRepository.list();
     let rand = Math.random(); // returns from 0 to 1
     // rand = 0.5 - rat.spawnChance => 0.2
     // rand = 0.2 - globin.spawnChance => 0 => BATTLE
