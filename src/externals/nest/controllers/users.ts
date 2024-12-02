@@ -39,15 +39,19 @@ export class UserController {
     }
   }
 
-  @Post(":id/walk")
-  async userWalk(@Param("id") userId, @Res() res: Response): Promise<any> {
+  @Post(":userId/:mapId/walk")
+  async userWalk(
+    @Param("userId") userId,
+    @Param("mapId") mapId,
+    @Res() res: Response
+  ): Promise<any> {
     try {
       const battleOrNothing = await UserWalk.execute({
         userId,
-        mapId: "1",
+        mapId,
         x: 1,
         y: 1,
-        mapRepository:config.repositories.mapRepository,
+        mapRepository: config.repositories.mapRepository,
         userRepository: config.repositories.userRepository,
       });
 
