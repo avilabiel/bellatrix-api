@@ -1,6 +1,5 @@
 import IBattleRepository from "@/app/contracts/i-battle-repository";
 import IUseCase from "@/app/contracts/i-use-case";
-import Battle from "@/entities/Battle";
 import BattleEvent from "@/entities/BattleEvent";
 
 class CreateBattleEvent implements IUseCase {
