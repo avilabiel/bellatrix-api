@@ -6,18 +6,20 @@ import {
   Controller,
   HttpException,
   HttpStatus,
+  Param,
   Post,
 } from "@nestjs/common";
+
 @Controller("battle")
 export class BattleController {
   @Post(":id/event")
   async create(
-    @Body() id: string,
+    @Param() payload: { id: string },
     @Body() event: BattleEvent
   ): Promise<BattleEvent> {
     try {
       return await createBattleEvent.execute({
-        battleId: id,
+        battleId: payload.id,
         battleRepository: config.repositories.battleRepository,
         event,
       });
