@@ -1,3 +1,4 @@
+import IBattleRepository from "@/app/contracts/i-battle-repository";
 import IMapRepository from "@/app/contracts/i-map-repository";
 import IUseCase from "@/app/contracts/i-use-case";
 import IUserRepository from "@/app/contracts/i-user-repository";
@@ -13,6 +14,7 @@ class UserWalk implements IUseCase {
     y,
     mapRepository,
     userRepository,
+    battleRepository,
   }: {
     userId: string;
     mapId: string;
@@ -20,6 +22,7 @@ class UserWalk implements IUseCase {
     y: number;
     mapRepository: IMapRepository;
     userRepository: IUserRepository;
+    battleRepository: IBattleRepository;
   }): Promise<any> {
     const user = await userRepository.getById(userId);
 
@@ -39,14 +42,12 @@ class UserWalk implements IUseCase {
       return;
     }
 
-    const battle = this.buildBattle(user, selectedMonster);
-    return battle;
+    const battle = await this.buildBattle(user, selectedMonster);
+    return battleRepository.create(battle);
   }
 
   // Todo: receive monsters from map
-  private async shouldGoToBattle(
-    monsters: Monster[]
-  ): Promise<Monster | null> {
+  private async shouldGoToBattle(monsters: Monster[]): Promise<Monster | null> {
     let rand = Math.random(); // returns from 0 to 1
     // rand = 0.5 - rat.spawnChance => 0.2
     // rand = 0.2 - globin.spawnChance => 0 => BATTLE

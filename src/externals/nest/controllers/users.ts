@@ -53,6 +53,7 @@ export class UserController {
         y: 1,
         mapRepository: config.repositories.mapRepository,
         userRepository: config.repositories.userRepository,
+        battleRepository: config.repositories.battleRepository,
       });
 
       return res.status(HttpStatus.OK).json(battleOrNothing);
