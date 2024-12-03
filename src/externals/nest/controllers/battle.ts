@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 @Controller("battle")
 export class BattleController {
-  @Post(":id")
+  @Post(":id/event")
   async create(
     @Body() id: string,
     @Body() event: BattleEvent
