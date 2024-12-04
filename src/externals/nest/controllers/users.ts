@@ -1,6 +1,7 @@
 import CreateUser from "@/app/use-cases/create-user";
 import UserWalk from "@/app/use-cases/user-walk";
 import config from "@/config";
+import Battle from "@/entities/Battle";
 import User from "@/entities/User";
 import {
   Controller,
@@ -40,17 +41,21 @@ export class UserController {
   }
 
   @Post(":id/walk")
-  async userWalk(@Param("id") userId, @Res() res: Response): Promise<any> {
+  async userWalk(
+    @Param("id") userId,
+    @Body("mapId") mapId,
+    @Res() res: Response
+  ): Promise<Response<Battle>> {
     try {
-      const battleOrNothing = await UserWalk.execute({
+      const battleOrNothing:Battle = await UserWalk.execute({
         userId,
-        mapId: "1",
+        mapId,
         x: 1,
         y: 1,
-        mapRepository:config.repositories.mapRepository,
+        mapRepository: config.repositories.mapRepository,
         userRepository: config.repositories.userRepository,
+        battleRepository: config.repositories.battleRepository,
       });
-
       return res.status(HttpStatus.OK).json(battleOrNothing);
     } catch (error) {
       if (error.message.includes("User not found")) {
