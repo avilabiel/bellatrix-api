@@ -36,31 +36,7 @@ export default class UserRepositoryInMemory implements UserRepository {
     return Promise.resolve(null);
   }
 
-  update({
-    user,
-    event,
-    monster,
-  }: {
-    user: User;
-    event: BattleEvent;
-    monster: Monster;
-  }): Promise<User> {
-    if (event.actionType === "item-use") {
-      const nameItemFromEvent = event.item.name;
-      const newQuantityOfItem = event.result.sender.newQuantity;
-
-      user.character.items.find(
-        (item) => item.name === nameItemFromEvent
-      ).quantity = newQuantityOfItem;
-    }
-
-    user.character.hp += event.result.sender.hp || 0;
-    user.character.mp += event.result.sender.mp || 0;
-
-    if (event.result.sender.isWinner) {
-      user.character.xp += monster.xp;
-    }
-
+  update({ user }: { user: User }): Promise<User> {
     return Promise.resolve(user);
   }
 }
