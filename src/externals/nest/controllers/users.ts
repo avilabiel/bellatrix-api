@@ -47,7 +47,7 @@ export class UserController {
     @Res() res: Response
   ): Promise<Response<Battle>> {
     try {
-      const battleOrNothing:Battle = await UserWalk.execute({
+      const battleOrNothing: Battle = await UserWalk.execute({
         userId,
         mapId,
         x: 1,
@@ -69,8 +69,8 @@ export class UserController {
     }
   }
 
-  @Get()
-  async get(): Promise<any> {
-    return { test: true };
+  @Get(":id")
+  async get(@Param("id") userId): Promise<User> {
+    return await config.repositories.userRepository.getById(userId);
   }
 }

@@ -6,4 +6,6 @@ export default interface IUserRepository {
   getByNick(nick: string): Promise<User | null>;
 
   getById(userId: string): Promise<User | null>;
+
+  update( user: User): Promise<User>;
 }
