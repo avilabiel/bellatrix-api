@@ -21,6 +21,7 @@ export class BattleController {
       return await createBattleEvent.execute({
         battleId: payload.id,
         battleRepository: config.repositories.battleRepository,
+        userRepository: config.repositories.userRepository,
         event,
       });
     } catch (error) {
