@@ -21,10 +21,10 @@ class CreateBattleEvent implements IUseCase {
     if (!battle) {
       throw new Error("Battle not found");
     }
-    
+
     const user = battle.user;
     const monster = battle.monster;
-
+// 
     await updateUserByBattleEvent.execute({
       userRepository,
       user,
@@ -32,9 +32,6 @@ class CreateBattleEvent implements IUseCase {
       monster,
     });
 
-    if (event.result.sender.isWinner) {
-      return event;
-    }
 
     return await battleRepository.createEvent(battle, event);
   }
