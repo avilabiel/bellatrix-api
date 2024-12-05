@@ -36,7 +36,7 @@ export default class UserRepositoryInMemory implements UserRepository {
     return Promise.resolve(null);
   }
 
-  update({ user }: { user: User }): Promise<User> {
+  update(user: User): Promise<User> {
     return Promise.resolve(user);
   }
 }

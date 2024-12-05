@@ -7,5 +7,5 @@ export default interface IUserRepository {
 
   getById(userId: string): Promise<User | null>;
 
-  update({ user }: { user: User }): Promise<User>;
+  update( user: User): Promise<User>;
 }

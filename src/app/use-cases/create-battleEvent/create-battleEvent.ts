@@ -22,16 +22,12 @@ class CreateBattleEvent implements IUseCase {
       throw new Error("Battle not found");
     }
 
-    const user = battle.user;
-    const monster = battle.monster;
-// 
     await updateUserByBattleEvent.execute({
       userRepository,
-      user,
+      user: battle.user,
       event,
-      monster,
+      monster: battle.monster,
     });
-
 
     return await battleRepository.createEvent(battle, event);
   }

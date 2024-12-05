@@ -16,11 +16,11 @@ class UpdateUserByBattleEvent implements IUseCase {
     event: BattleEvent;
     monster: Monster;
   }): Promise<User> {
-    const userUpdated = this.UpdateUserStats(user, event, monster);
-    return await userRepository.update({ user: userUpdated });
+    const userUpdated = this.updateUserStats(user, event, monster);
+    return await userRepository.update(userUpdated);
   }
 
-  private UpdateUserStats(user: User, event: BattleEvent, monster: Monster) {
+  private updateUserStats(user: User, event: BattleEvent, monster: Monster) {
     if (event.actionType === "item-use") {
       const nameItemFromEvent = event.item.name;
       const newQuantityOfItem = event.result.sender.newQuantity;
