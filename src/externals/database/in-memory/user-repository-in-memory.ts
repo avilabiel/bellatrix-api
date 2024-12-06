@@ -10,6 +10,7 @@ export default class UserRepositoryInMemory implements UserRepository {
   create({ user }: { user: User }): Promise<User> {
     user.id = uuid();
     user.createdAt = new Date();
+    user.character.deaths = 0;
 
     this.users.push(user);
 
