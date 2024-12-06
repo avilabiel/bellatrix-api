@@ -36,10 +36,11 @@ class UpdateUserByBattleEvent implements IUseCase {
     if (event.result.sender.isWinner) {
       user.character.xp += monster.xp;
     }
-    
+
     if (event.result.receiver.isWinner) {
       user.character.level = 1;
       user.character.deaths += 1;
+      user.character.xp = 0;
     }
 
     return user;
