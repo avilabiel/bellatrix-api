@@ -23,24 +23,47 @@ class UpdateUserByBattleEvent implements IUseCase {
   private updateUserStats(user: User, event: BattleEvent, monster: Monster) {
     if (event.actionType === "item-use") {
       const nameItemFromEvent = event.item.name;
-      const newQuantityOfItem = event.result.sender.newQuantity;
+      const newQuantityOfItem =
+        event.result.sender.newQuantity || event.sender.name === user.nick
+          ? event.result.sender.newQuantity
+          : event.result.receiver.newQuantity ||
+            event.receiver.name === user.nick
+          ? event.result.receiver.newQuantity
+          : 0;
 
       user.character.items.find(
         (item) => item.name === nameItemFromEvent
-      ).quantity = newQuantityOfItem;
+      ).quantity += newQuantityOfItem;
     }
 
-    user.character.hp += event.result.sender.hp || 0;
-    user.character.mp += event.result.sender.mp || 0;
-
-    if (event.result.sender.isWinner) {
-      user.character.xp += monster.xp;
+    if (event.sender.name === user.nick && event.receiver.name === user.nick) {
+      user.character.hp +=
+        event.result.sender.hp || event.sender.name === user.nick
+          ? event.result.sender.hp
+          : event.result.receiver.hp || event.receiver.name === user.nick
+          ? event.result.receiver.hp
+          : 0;
+      user.character.mp +=
+        event.result.sender.mp || event.sender.name === user.nick
+          ? event.result.sender.mp
+          : event.result.receiver.mp || event.receiver.name === user.nick
+          ? event.result.receiver.mp
+          : 0;
     }
 
-    if (event.result.receiver.isWinner) {
+    if (
+      (event.result.sender.isWinner || event.sender.name === monster.name) &&
+      (event.result.receiver.isWinner || event.receiver.name === monster.name)
+    ) {
       user.character.level = 1;
       user.character.deaths += 1;
       user.character.xp = 0;
+    }
+    if (
+      (event.result.sender.isWinner || event.sender.name === user.nick) &&
+      (event.result.receiver.isWinner || event.receiver.name === user.nick)
+    ) {
+      user.character.xp += monster.xp;
     }
 
     return user;
