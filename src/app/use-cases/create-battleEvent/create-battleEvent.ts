@@ -21,14 +21,12 @@ class CreateBattleEvent implements IUseCase {
     if (!battle) {
       throw new Error("Battle not found");
     }
-
     await updateUserByBattleEvent.execute({
       userRepository,
-      user: battle.user,
       event,
+      userId: battle.user.id,
       monster: battle.monster,
     });
-
     return await battleRepository.createEvent(battle, event);
   }
 }

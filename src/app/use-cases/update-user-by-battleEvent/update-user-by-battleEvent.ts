@@ -7,65 +7,79 @@ import User from "@/entities/User";
 class UpdateUserByBattleEvent implements IUseCase {
   async execute({
     userRepository,
-    user,
     event,
     monster,
+    userId,
   }: {
     userRepository: IUserRepository;
-    user: User;
     event: BattleEvent;
     monster: Monster;
+    userId: string;
   }): Promise<User> {
-    const userUpdated = this.updateUserStats(user, event, monster);
+    const userUpdated = await this.updateUserStats(
+      userRepository,
+      event,
+      monster,
+      userId
+    );
     return await userRepository.update(userUpdated);
   }
 
-  private updateUserStats(user: User, event: BattleEvent, monster: Monster) {
+  private async updateUserStats(
+    userRepository: IUserRepository,
+    event: BattleEvent,
+    monster: Monster,
+    userId: string
+  ) {
+    const userIsSender = event.sender.isUser ? true : false;
+    const userIsReceiver = !userIsSender;
+
+    const user = await userRepository.getById(userId);
+
+    const initialUserHp = user.character.hp;
+    const initialUserMp = user.character.mp;
+
+    const monsterIsSender = !userIsSender;
+    const monsterIsReceiver = !userIsReceiver;
+
+    const winnerIsUser =
+      (event.result.sender.isWinner && userIsSender) ||
+      (event.result.receiver.isWinner && userIsReceiver);
+    const winnerIsMonster =
+      (event.result.sender.isWinner && monsterIsSender) ||
+      (event.result.receiver.isWinner && monsterIsReceiver);
+
     if (event.actionType === "item-use") {
       const nameItemFromEvent = event.item.name;
-      const newQuantityOfItem =
-        event.result.sender.newQuantity || event.sender.name === user.nick
-          ? event.result.sender.newQuantity
-          : event.result.receiver.newQuantity ||
-            event.receiver.name === user.nick
-          ? event.result.receiver.newQuantity
-          : 0;
+
+      const newQuantityOfUserItem = userIsSender
+        ? event.result.sender.newQuantity
+        : event.result.receiver.newQuantity;
 
       user.character.items.find(
         (item) => item.name === nameItemFromEvent
-      ).quantity += newQuantityOfItem;
+      ).quantity = newQuantityOfUserItem;
     }
 
-    if (event.sender.name === user.nick && event.receiver.name === user.nick) {
-      user.character.hp +=
-        event.result.sender.hp || event.sender.name === user.nick
-          ? event.result.sender.hp
-          : event.result.receiver.hp || event.receiver.name === user.nick
-          ? event.result.receiver.hp
-          : 0;
-      user.character.mp +=
-        event.result.sender.mp || event.sender.name === user.nick
-          ? event.result.sender.mp
-          : event.result.receiver.mp || event.receiver.name === user.nick
-          ? event.result.receiver.mp
-          : 0;
+    if (userIsSender || userIsReceiver) {
+      user.character.hp += userIsSender
+        ? event.result.sender.hp
+        : event.result.receiver.hp;
+
+      user.character.mp += userIsSender
+        ? event.result.sender.mp
+        : event.result.receiver.mp;
     }
 
-    if (
-      (event.result.sender.isWinner || event.sender.name === monster.name) &&
-      (event.result.receiver.isWinner || event.receiver.name === monster.name)
-    ) {
-      user.character.level = 1;
+    if (winnerIsMonster) {
+      user.character.hp = initialUserHp;
+      user.character.mp = initialUserMp;
       user.character.deaths += 1;
       user.character.xp = 0;
     }
-    if (
-      (event.result.sender.isWinner || event.sender.name === user.nick) &&
-      (event.result.receiver.isWinner || event.receiver.name === user.nick)
-    ) {
+    if (winnerIsUser) {
       user.character.xp += monster.xp;
     }
-
     return user;
   }
 }
