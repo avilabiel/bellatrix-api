@@ -14,8 +14,6 @@ export default class BattleRepositoryInMemory implements IBattleRepository {
   }
 
   createEvent(battle: Battle, event: BattleEvent): Promise<BattleEvent> {
-    event.sender.id = uuid();
-    event.receiver.id = uuid();
     battle.events.push(event);
     return Promise.resolve(new BattleEvent(event));
   }

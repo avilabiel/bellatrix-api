@@ -8,12 +8,10 @@ export enum ACTION_TYPE {
 export default class BattleEvent {
   actionType: ACTION_TYPE;
   sender: {
-    id: string;
     name: string;
     isUser: boolean;
   };
   receiver: null | {
-    id: string;
     name: string;
     isUser: boolean;
   };
