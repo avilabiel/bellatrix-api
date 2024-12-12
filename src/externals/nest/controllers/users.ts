@@ -1,6 +1,7 @@
 import CreateUser from "@/app/use-cases/create-user";
 import UserWalk from "@/app/use-cases/user-walk";
 import config from "@/config";
+import Battle from "@/entities/Battle";
 import User from "@/entities/User";
 import {
   Controller,
@@ -10,15 +11,21 @@ import {
   HttpException,
   Get,
   Param,
+  Res,
 } from "@nestjs/common";
+import { Response } from "express";
+
+type CreateUserBody = {
+  nick: string;
+};
 
 @Controller("users")
 export class UserController {
   @Post()
-  async create(@Body() nick: string): Promise<User> {
+  async create(@Body() payload: CreateUserBody): Promise<User> {
     try {
       return await CreateUser.execute({
-        nick,
+        nick: payload.nick,
         userRepository: config.repositories.userRepository,
       });
     } catch (error) {
@@ -34,18 +41,27 @@ export class UserController {
   }
 
   @Post(":id/walk")
-  async userWalk(@Param("id") userId): Promise<any> {
+  async userWalk(
+    @Param("id") userId,
+    @Body("mapId") mapId,
+    @Res() res: Response
+  ): Promise<Response<Battle>> {
     try {
-      return await UserWalk.execute({
+      const battleOrNothing: Battle = await UserWalk.execute({
         userId,
-        mapId: "1234",
+        mapId,
         x: 1,
         y: 1,
-        // mapRepository,
+        mapRepository: config.repositories.mapRepository,
         userRepository: config.repositories.userRepository,
+        battleRepository: config.repositories.battleRepository,
       });
+      return res.status(HttpStatus.OK).json(battleOrNothing);
     } catch (error) {
-      console.log(error);
+      if (error.message.includes("User not found")) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      }
+
       throw new HttpException(
         "Internal server error",
         HttpStatus.INTERNAL_SERVER_ERROR
@@ -53,8 +69,8 @@ export class UserController {
     }
   }
 
-  @Get()
-  async get(): Promise<any> {
-    return { test: true };
+  @Get(":id")
+  async get(@Param("id") userId): Promise<User> {
+    return await config.repositories.userRepository.getById(userId);
   }
 }

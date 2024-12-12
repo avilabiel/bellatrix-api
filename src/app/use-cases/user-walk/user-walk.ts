@@ -1,6 +1,10 @@
+import IBattleRepository from "@/app/contracts/i-battle-repository";
 import IMapRepository from "@/app/contracts/i-map-repository";
 import IUseCase from "@/app/contracts/i-use-case";
 import IUserRepository from "@/app/contracts/i-user-repository";
+import Battle from "@/entities/Battle";
+import Monster from "@/entities/Monster";
+import User from "@/entities/User";
 
 class UserWalk implements IUseCase {
   async execute({
@@ -8,38 +12,45 @@ class UserWalk implements IUseCase {
     mapId,
     x,
     y,
-    // mapRepository,
+    mapRepository,
     userRepository,
+    battleRepository,
   }: {
     userId: string;
     mapId: string;
     x: number;
     y: number;
-    // mapRepository: IMapRepository;
+    mapRepository: IMapRepository;
     userRepository: IUserRepository;
+    battleRepository: IBattleRepository;
   }): Promise<any> {
-    // const user = await userRepository.getById(userId);
+    const user = await userRepository.getById(userId);
 
-    // if (!user) {
-    //   throw new Error("User not found");
-    // }
+    if (!user) {
+      throw new Error("User not found");
+    }
 
-    // const gameMap = await mapRepository.getById(mapId);
+    const { name, monsters } = await mapRepository.getById(mapId);
 
-    // if (!gameMap) {
-    //   throw new Error("Map not found");
-    // }
+    if (!name) {
+      throw new Error("Map not found");
+    }
 
-    // calcs chance to get a battle
-    const monsters = [
-      { name: "rat", spawnChance: 0.3 },
-      { name: "goblin", spawnChance: 0.2 },
-    ];
+    const selectedMonster = await this.shouldGoToBattle(monsters);
 
+    if (!selectedMonster) {
+      return;
+    }
+
+    const battle = await this.buildBattle(user, selectedMonster);
+    return battleRepository.create(battle);
+  }
+
+  // Todo: receive monsters from map
+  private async shouldGoToBattle(monsters: Monster[]): Promise<Monster | null> {
     let rand = Math.random(); // returns from 0 to 1
     // rand = 0.5 - rat.spawnChance => 0.2
     // rand = 0.2 - globin.spawnChance => 0 => BATTLE
-    let shouldGoToBattle = false;
     let selectedMonster = null;
     let count = 0;
 
@@ -51,7 +62,6 @@ class UserWalk implements IUseCase {
       rand -= monsters[count].spawnChance;
 
       if (rand <= 0) {
-        shouldGoToBattle = true;
         selectedMonster = monsters[count];
         break;
       }
@@ -59,7 +69,16 @@ class UserWalk implements IUseCase {
       count++;
     }
 
-    return { battle: shouldGoToBattle, selectedMonster };
+    return selectedMonster;
+  }
+
+  private async buildBattle(user: User, monster: Monster): Promise<Battle> {
+    return new Battle({
+      user,
+      monster,
+      events: [],
+      startedAt: new Date(),
+    });
   }
 }
 

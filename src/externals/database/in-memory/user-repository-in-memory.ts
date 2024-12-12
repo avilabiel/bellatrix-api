@@ -1,6 +1,8 @@
 import { uuid } from "uuidv4";
 import User from "@/entities/User";
 import UserRepository from "@/app/contracts/i-user-repository";
+import BattleEvent from "@/entities/BattleEvent";
+import Monster from "@/entities/Monster";
 
 export default class UserRepositoryInMemory implements UserRepository {
   private users: User[] = [];
@@ -32,5 +34,9 @@ export default class UserRepositoryInMemory implements UserRepository {
     }
 
     return Promise.resolve(null);
+  }
+
+  update(user: User): Promise<User> {
+    return Promise.resolve(user);
   }
 }
