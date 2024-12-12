@@ -1,5 +1,6 @@
 type Character = {
   level: number;
+  deaths: number;
   hp: number;
   mp: number;
   maxHp: number;

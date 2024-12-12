@@ -4,7 +4,6 @@ import Battle from "@/entities/Battle";
 import BattleEvent from "@/entities/BattleEvent";
 
 export default class BattleRepositoryInMemory implements IBattleRepository {
-
   private battle: Battle[] = [];
 
   create(battle: Battle): Promise<Battle> {
@@ -21,7 +20,7 @@ export default class BattleRepositoryInMemory implements IBattleRepository {
 
   getById(battleId: string): Promise<Battle> {
     const battle = this.battle.find((battle) => battle.id === battleId);
-    
+
     if (battle) {
       return Promise.resolve(new Battle(battle));
     }

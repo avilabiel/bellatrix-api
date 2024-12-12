@@ -33,6 +33,7 @@ class CreateUser implements IUseCase {
       image: images[Math.floor(Math.random() * images.length)],
       character: {
         level: 1,
+        deaths: 0,
         hp: 20,
         mp: 10,
         maxHp: 20,

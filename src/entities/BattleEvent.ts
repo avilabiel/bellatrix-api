@@ -9,9 +9,11 @@ export default class BattleEvent {
   actionType: ACTION_TYPE;
   sender: {
     name: string;
+    isUser: boolean;
   };
   receiver: null | {
     name: string;
+    isUser: boolean;
   };
   item?: null | {
     name: string;
