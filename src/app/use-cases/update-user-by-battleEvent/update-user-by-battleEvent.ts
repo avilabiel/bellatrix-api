@@ -1,6 +1,6 @@
 import IUseCase from "@/app/contracts/i-use-case";
 import IUserRepository from "@/app/contracts/i-user-repository";
-import BattleEvent from "@/entities/BattleEvent";
+import BattleEvent, { ACTION_TYPE } from "@/entities/BattleEvent";
 import Monster from "@/entities/Monster";
 import User from "@/entities/User";
 
@@ -9,78 +9,77 @@ class UpdateUserByBattleEvent implements IUseCase {
     userRepository,
     event,
     monster,
-    userId,
+    user,
   }: {
     userRepository: IUserRepository;
     event: BattleEvent;
     monster: Monster;
-    userId: string;
+    user: User;
   }): Promise<User> {
-    const userUpdated = await this.updateUserStats(
-      userRepository,
+    const userUpdated = await this.updateUserAndMonsterStats({
       event,
+      user,
       monster,
-      userId
-    );
-    return await userRepository.update(userUpdated);
+    });
+
+    return await userRepository.update(userUpdated.user);
   }
 
-  private async updateUserStats(
-    userRepository: IUserRepository,
-    event: BattleEvent,
-    monster: Monster,
-    userId: string
-  ) {
-    const userIsSender = event.sender.isUser ? true : false;
-    const userIsReceiver = !userIsSender;
+  // Monstro sendo atualizad
+  // Level UP
+  // Max HP, Max MP, Next level XP, Atk, Def, Spd, Mag, Spr => UP
+  private async updateUserAndMonsterStats({
+    event,
+    user,
+    monster,
+  }: {
+    event: BattleEvent;
+    user: User;
+    monster: Monster;
+  }): Promise<{ user: User; monster: Monster }> {
+    const receiver: Monster | User["character"] = event.receiver.isUser
+      ? user.character
+      : monster;
+    const sender: Monster | User["character"] = event.sender.isUser
+      ? user.character
+      : monster;
 
-    const user = await userRepository.getById(userId);
-
-    const initialUserHp = user.character.hp;
-    const initialUserMp = user.character.mp;
-
-    const monsterIsSender = !userIsSender;
-    const monsterIsReceiver = !userIsReceiver;
-
-    const winnerIsUser =
-      (event.result.sender.isWinner && userIsSender) ||
-      (event.result.receiver.isWinner && userIsReceiver);
-    const winnerIsMonster =
-      (event.result.sender.isWinner && monsterIsSender) ||
-      (event.result.receiver.isWinner && monsterIsReceiver);
-
-    if (event.actionType === "item-use") {
-      const nameItemFromEvent = event.item.name;
-
-      const newQuantityOfUserItem = userIsSender
-        ? event.result.sender.newQuantity
-        : event.result.receiver.newQuantity;
-
-      user.character.items.find(
-        (item) => item.name === nameItemFromEvent
-      ).quantity = newQuantityOfUserItem;
+    if (event.actionType === ACTION_TYPE["base-attack"]) {
+      receiver.hp += event.result.receiver.hp;
     }
 
-    if (userIsSender || userIsReceiver) {
-      user.character.hp += userIsSender
-        ? event.result.sender.hp
-        : event.result.receiver.hp;
+    // TODO: deal with max hp
+    // If HP is bigger than maxHp, then set maxHP
+    if (event.actionType === ACTION_TYPE["item-use"]) {
+      sender.hp += event.result.sender.hp;
+      sender.mp += event.result.sender.mp ?? 0;
 
-      user.character.mp += userIsSender
-        ? event.result.sender.mp
-        : event.result.receiver.mp;
+      (sender as User["character"]).items.find(
+        (item) => item.name === event.item.name
+      ).quantity = event.result.sender.newQuantity;
     }
 
-    if (winnerIsMonster) {
-      user.character.hp = initialUserHp;
-      user.character.mp = initialUserMp;
-      user.character.deaths += 1;
-      user.character.xp = 0;
+    if (event.actionType === ACTION_TYPE["spell-attack"]) {
+      sender.mp += event.result.sender.mp;
+      receiver.hp += event.result.receiver.hp;
     }
-    if (winnerIsUser) {
+
+    const didUserWin = event.result.sender.isWinner && event.sender.isUser;
+    const didMonsterWin = event.result.sender.isWinner && !event.sender.isUser;
+
+    if (didUserWin) {
       user.character.xp += monster.xp;
     }
-    return user;
+
+    if (didMonsterWin) {
+      user.character.deaths += 1;
+      user.character.level = 1;
+      user.character.xp = 0;
+
+      // TODO: use the public buildUserLevel1()
+    }
+
+    return { user, monster };
   }
 }
 

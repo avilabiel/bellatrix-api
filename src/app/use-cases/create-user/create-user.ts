@@ -21,6 +21,7 @@ class CreateUser implements IUseCase {
     return await userRepository.create({ user: userToCreate });
   }
 
+  // TODO: Make this public and use it across the system
   private buildUserLevel1(nick: string): User {
     const images = [
       "https://pbs.twimg.com/profile_images/1725495920840585217/rdF0kKid_400x400.jpg",
