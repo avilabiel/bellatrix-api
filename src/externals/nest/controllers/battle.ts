@@ -1,4 +1,4 @@
-import createBattleEvent from "@/app/use-cases/create-battleEvent/create-battleEvent";
+import createBattleEvent from "@/app/use-cases/create-battle-event/create-battle-event";
 import config from "@/config";
 import BattleEvent from "@/entities/BattleEvent";
 import {

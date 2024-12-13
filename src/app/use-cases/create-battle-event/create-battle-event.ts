@@ -1,7 +1,7 @@
 import IBattleRepository from "@/app/contracts/i-battle-repository";
 import IUseCase from "@/app/contracts/i-use-case";
 import BattleEvent from "@/entities/BattleEvent";
-import updateUserByBattleEvent from "../update-user-by-battleEvent";
+import UpdateUserAndMonsterByBattleEvent from "../update-user-monster-by-battle-event";
 import IUserRepository from "@/app/contracts/i-user-repository";
 
 class CreateBattleEvent implements IUseCase {
@@ -22,7 +22,7 @@ class CreateBattleEvent implements IUseCase {
       throw new Error("Battle not found");
     }
 
-    await updateUserByBattleEvent.execute({
+    await UpdateUserAndMonsterByBattleEvent.execute({
       userRepository,
       event,
       user: battle.user,

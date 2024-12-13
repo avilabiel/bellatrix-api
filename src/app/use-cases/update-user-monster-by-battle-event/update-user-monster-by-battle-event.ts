@@ -4,7 +4,7 @@ import BattleEvent, { ACTION_TYPE } from "@/entities/BattleEvent";
 import Monster from "@/entities/Monster";
 import User from "@/entities/User";
 
-class UpdateUserByBattleEvent implements IUseCase {
+class UpdateUserAndMonsterByBattleEvent implements IUseCase {
   async execute({
     userRepository,
     event,
@@ -16,13 +16,13 @@ class UpdateUserByBattleEvent implements IUseCase {
     monster: Monster;
     user: User;
   }): Promise<User> {
-    const userUpdated = await this.updateUserAndMonsterStats({
+    const userAndMonsterUpdated = await this.updateUserAndMonsterStats({
       event,
       user,
       monster,
     });
 
-    return await userRepository.update(userUpdated.user);
+    return await userRepository.update(userAndMonsterUpdated.user);
   }
 
   // Monstro sendo atualizad
@@ -48,10 +48,11 @@ class UpdateUserByBattleEvent implements IUseCase {
       receiver.hp += event.result.receiver.hp;
     }
 
-    // TODO: deal with max hp
-    // If HP is bigger than maxHp, then set maxHP
     if (event.actionType === ACTION_TYPE["item-use"]) {
-      sender.hp += event.result.sender.hp;
+      sender.hp = Math.min(
+        sender.hp + event.result.sender.hp,
+        user.character.maxHp
+      );
       sender.mp += event.result.sender.mp ?? 0;
 
       (sender as User["character"]).items.find(
@@ -83,4 +84,4 @@ class UpdateUserByBattleEvent implements IUseCase {
   }
 }
 
-export default new UpdateUserByBattleEvent();
+export default new UpdateUserAndMonsterByBattleEvent();
