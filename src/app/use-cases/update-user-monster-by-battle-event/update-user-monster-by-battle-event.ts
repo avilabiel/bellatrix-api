@@ -15,14 +15,18 @@ class UpdateUserAndMonsterByBattleEvent implements IUseCase {
     event: BattleEvent;
     monster: Monster;
     user: User;
-  }): Promise<User> {
+  }): Promise<{ user: User; monster: Monster }> {
     const userAndMonsterUpdated = await this.updateUserAndMonsterStats({
       event,
       user,
       monster,
     });
 
-    return await userRepository.update(userAndMonsterUpdated.user);
+    await userRepository.update(userAndMonsterUpdated.user);
+
+    // TODO: update monster (bring monster repository)
+
+    return userAndMonsterUpdated;
   }
 
   // Monstro sendo atualizad
