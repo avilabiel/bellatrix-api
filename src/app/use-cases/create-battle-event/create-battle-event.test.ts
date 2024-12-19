@@ -5,9 +5,11 @@ import BattleRepositoryInMemory from "@/externals/database/in-memory/battle-repo
 import MapRepositoryInMemory from "@/externals/database/in-memory/map-repository-in-memory";
 import UserWalk from "../user-walk/user-walk";
 import CreateUser from "../create-user/create-user";
+import MonsterRepositoryInMemory from "@/externals/database/in-memory/monster-repository-in-memory";
 
 const userRepository = new UserRepositoryInMemory();
 const battleRepository = new BattleRepositoryInMemory();
+const monsterRepository = new MonsterRepositoryInMemory();
 const mapRepository = new MapRepositoryInMemory();
 const event = {
   actionType: ACTION_TYPE["base-attack"],
@@ -50,6 +52,7 @@ describe("CreateBattleEvent/execute", () => {
       battleId,
       battleRepository,
       userRepository,
+      monsterRepository,
       event,
     });
 
@@ -61,9 +64,10 @@ describe("CreateBattleEvent/execute", () => {
       battleId: "1234",
       battleRepository,
       userRepository,
+      monsterRepository,
       event,
     });
-    
+
     expect(battleEvent).rejects.toThrowError("Battle not found");
   });
 });
