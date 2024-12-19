@@ -3,156 +3,239 @@ import UpdateUserMonsterByBattleEvent from "./update-user-monster-by-battle-even
 import * as mock from "../../../mock-test";
 import MonsterRepositoryInMemory from "@/externals/database/in-memory/monster-repository-in-memory";
 
-// Test all possible scenarios
-// Private methods won't be tested
+describe("user as a sender/attacker", () => {
+  it("attacks the monster with base attack", async () => {
+    const user = { ...mock.user };
+    const monster = { ...mock.monster };
+    const event = mock.eventUserIsSenderBaseAttack;
+    const userRepository = new UserRepositoryInMemory();
+    const monsterRepository = new MonsterRepositoryInMemory();
 
-/* Next steps
-1. Save monster stats on database (UpdateUserMonsterByBattleEvent)
-2. Update automated tests => user as a sender/attacker => attacks the monster with base attack
-3. Update controller
-4. Write all other tests
-*/
-describe("Test method updateUserAndMonsterStats", () => {
-  describe("user as a sender/attacker", () => {
-    it("attacks the monster with base attack", async () => {
-      const user = { ...mock.user };
-      const monster = { ...mock.monster };
-      const event = mock.eventUserIsSenderBaseAttack;
-      const userRepository = new UserRepositoryInMemory();
-      await userRepository.create({ user });
-
-      const updated = await UpdateUserMonsterByBattleEvent.execute({
-        event,
-        user,
-        monster,
-        userRepository,
-      });
-
-      const userDb = await userRepository.getById(user.id);
-
-      expect(updated.monster.hp).toBeLessThan(mock.monster.hp);
-      // todo: check monster hp on database
-
-      expect(updated.user.character.hp).toEqual(user.character.hp);
-      expect(userDb.character.hp).toEqual(user.character.hp);
+    await userRepository.create({ user });
+    const updated = await UpdateUserMonsterByBattleEvent.execute({
+      event,
+      user,
+      monster,
+      userRepository,
+      monsterRepository,
     });
+    const userDb = await userRepository.getById(user.id);
+    const monsterDb = await monsterRepository.getById(monster.id);
 
-    it("attacks the monster with spell attack", async () => {});
-
-    it("uses an item", async () => {});
+    expect(updated.monster.hp).toBeLessThan(mock.monster.hp);
+    expect(monsterDb.hp).toBeLessThan(mock.monster.hp);
+    expect(updated.user.character.hp).toEqual(user.character.hp);
+    expect(userDb.character.hp).toEqual(user.character.hp);
   });
+  it("attacks the monster with spell attack", async () => {
+    const user = { ...mock.user };
+    const monster = { ...mock.monster };
+    const event = mock.eventUserIsSenderSpellAttack;
+    const userRepository = new UserRepositoryInMemory();
+    const monsterRepository = new MonsterRepositoryInMemory();
 
-  describe("monster as a sender/attacker", () => {
-    it("attacks the user with base attack", async () => {
-      expect(true).toBe(true);
+    await userRepository.create({ user });
+    const updated = await UpdateUserMonsterByBattleEvent.execute({
+      event,
+      user,
+      monster,
+      userRepository,
+      monsterRepository,
     });
+    const userDb = await userRepository.getById(user.id);
+    const monsterDb = await monsterRepository.getById(monster.id);
+
+    expect(updated.monster.hp).toBeLessThan(mock.monster.hp);
+    expect(monsterDb.hp).toBeLessThan(mock.monster.hp);
+    expect(updated.user.character.hp).toEqual(user.character.hp);
+    expect(userDb.character.hp).toEqual(user.character.hp);
   });
+  it("increases hp when using potion hp and hp is not full", async () => {
+    const userWithLowHp = {
+      ...mock.user,
+      character: { ...mock.user.character, hp: 5 },
+    };
+    const userWithLowHpBaseToCompare = {
+      ...mock.user,
+      character: { ...mock.user.character, hp: 5 },
+    };
+    const monster = { ...mock.monster };
+    const event = mock.eventUserIsSenderItemUsePotionHp;
+    const userRepository = new UserRepositoryInMemory();
+    const monsterRepository = new MonsterRepositoryInMemory();
 
-  // it("Base Attack (user is sender) : Check if monster loses hp when user attacks", async () => {
-  //   const initialHpMonster = monster.hp;
+    await userRepository.create({ user: userWithLowHp });
 
-  //   const userAndMonsterUpdated = await UpdateUserMonsterByBattleEvent[
-  //     "updateUserAndMonsterStats"
-  //   ]({
-  //     event: eventUserIsSenderBaseAttack,
-  //     user: user,
-  //     monster: monster,
-  //   });
+    const updated = await UpdateUserMonsterByBattleEvent.execute({
+      event,
+      user: userWithLowHp,
+      monster,
+      userRepository,
+      monsterRepository,
+    });
+    const userDb = await userRepository.getById(userWithLowHp.id);
+    const monsterDb = await monsterRepository.getById(monster.id);
 
-  //   expect(userAndMonsterUpdated.monster.hp).toBeLessThan(initialHpMonster);
-  // });
-  // it("Base Attack (monster is sender) : Check if user loses hp when monster attacks", async () => {
-  //   const initialHpUser = user.character.hp;
+    expect(updated.user.character.items[0].quantity).toEqual(
+      event.result.sender.newQuantity
+    );
+    expect(userDb.character.items[0].quantity).toEqual(
+      event.result.sender.newQuantity
+    );
+    expect(updated.user.character.hp).toBeGreaterThan(
+      userWithLowHpBaseToCompare.character.hp
+    );
+    expect(userDb.character.hp).toEqual(updated.user.character.hp);
+    expect(monsterDb.hp).toEqual(monster.hp);
+  });
+  it("does not increase hp when using potion hp and hp is already full", async () => {
+    const userWithFullHp = {
+      ...mock.user,
+      character: { ...mock.user.character, hp: mock.user.character.maxHp },
+    };
+    const userWithFullHpBaseToCompare = {
+      ...mock.user,
+      character: { ...mock.user.character, hp: mock.user.character.maxHp },
+    };
+    const monster = { ...mock.monster };
+    const event = mock.eventUserIsSenderItemUsePotionHp;
+    const userRepository = new UserRepositoryInMemory();
+    const monsterRepository = new MonsterRepositoryInMemory();
 
-  //   const userAndMonsterUpdated = await UpdateUserMonsterByBattleEvent[
-  //     "updateUserAndMonsterStats"
-  //   ]({
-  //     event: eventMonsterIsSenderBaseAttack,
-  //     user: user,
-  //     monster: monster,
-  //   });
+    await userRepository.create({ user: userWithFullHp });
+    const updated = await UpdateUserMonsterByBattleEvent.execute({
+      event,
+      user: userWithFullHp,
+      monster,
+      userRepository,
+      monsterRepository,
+    });
+    const userDb = await userRepository.getById(userWithFullHp.id);
+    const monsterDb = await monsterRepository.getById(monster.id);
 
-  //   expect(userAndMonsterUpdated.user.character.hp).toBeLessThan(initialHpUser);
-  // });
-  // it("Monster wins battle", async () => {
-  //   const initialDeathUser = user.character.deaths;
+    expect(updated.user.character.items[0].quantity).toEqual(
+      event.result.sender.newQuantity
+    );
+    expect(userDb.character.items[0].quantity).toEqual(
+      event.result.sender.newQuantity
+    );
+    expect(updated.user.character.hp).toEqual(
+      userWithFullHpBaseToCompare.character.hp
+    );
+    expect(userDb.character.hp).toEqual(updated.user.character.hp);
+    expect(monsterDb.hp).toEqual(monster.hp);
+  });
+  it("increases mp when using potion mp", async () => {
+    const userWithLowMp = {
+      ...mock.user,
+      character: { ...mock.user.character, mp: 0 },
+    };
+    const userWithLowMpBaseToCompare = {
+      ...mock.user,
+      character: { ...mock.user.character, mp: 0 },
+    };
+    const monster = { ...mock.monster };
+    const event = mock.eventUserIsSenderItemUsePotionMp;
+    const userRepository = new UserRepositoryInMemory();
+    const monsterRepository = new MonsterRepositoryInMemory();
 
-  //   const userAndMonsterUpdated = await UpdateUserMonsterByBattleEvent[
-  //     "updateUserAndMonsterStats"
-  //   ]({
-  //     event: eventMonsterIsSenderBaseAttack,
-  //     user: user,
-  //     monster: monster,
-  //   });
+    await userRepository.create({ user: userWithLowMp });
+    const updated = await UpdateUserMonsterByBattleEvent.execute({
+      event,
+      user: userWithLowMp,
+      monster,
+      userRepository,
+      monsterRepository,
+    });
+    const userDb = await userRepository.getById(userWithLowMp.id);
+    const monsterDb = await monsterRepository.getById(monster.id);
 
-  //   expect(userAndMonsterUpdated.user.character.xp).toBe(0);
-  //   expect(userAndMonsterUpdated.user.character.deaths).toBeGreaterThan(
-  //     initialDeathUser
-  //   );
-  //   expect(userAndMonsterUpdated.user.character.level).toBe(1);
-  // });
-  // it("User wins battle", async () => {
-  //   const initialXpUser = user.character.xp;
+    expect(updated.user.character.items[1].quantity).toEqual(
+      event.result.sender.newQuantity
+    );
+    expect(userDb.character.items[1].quantity).toEqual(
+      event.result.sender.newQuantity
+    );
+    expect(updated.user.character.mp).toBeGreaterThan(
+      userWithLowMpBaseToCompare.character.mp
+    );
+    expect(userDb.character.mp).toEqual(updated.user.character.mp);
+    expect(monsterDb.hp).toEqual(monster.hp);
+  });
+  it("wins battle", async () => {
+    const user = { ...mock.user };
+    const monster = { ...mock.monster };
+    const event = mock.eventUserIsSenderBaseAttack;
+    const userRepository = new UserRepositoryInMemory();
+    const monsterRepository = new MonsterRepositoryInMemory();
 
-  //   const userAndMonsterUpdated = await UpdateUserMonsterByBattleEvent[
-  //     "updateUserAndMonsterStats"
-  //   ]({
-  //     event: eventUserIsSenderBaseAttack,
-  //     user: user,
-  //     monster: monster,
-  //   });
+    await userRepository.create({ user });
+    const updated = await UpdateUserMonsterByBattleEvent.execute({
+      event,
+      user,
+      monster,
+      userRepository,
+      monsterRepository,
+    });
+    const userDb = await userRepository.getById(user.id);
 
-  //   expect(userAndMonsterUpdated.user.character.xp).toBeGreaterThan(
-  //     initialXpUser
-  //   );
-  // });
-  // it("Item use - Poção de Hp (user is sender) : User update quantity of item and increase Hp", async () => {
-  //   const initialHpUser = user.character.hp;
+    expect(updated.user.character.xp).toBeGreaterThan(mock.user.character.xp);
+    expect(userDb.character.xp).toEqual(updated.user.character.xp);
+  });
+});
 
-  //   const userAndMonsterUpdated = await UpdateUserMonsterByBattleEvent[
-  //     "updateUserAndMonsterStats"
-  //   ]({
-  //     event: eventUserIsSenderItemUsePotionHp,
-  //     user: user,
-  //     monster: monster,
-  //   });
-  //   expect(userAndMonsterUpdated.user.character.items[0].quantity).toEqual(
-  //     eventUserIsSenderItemUsePotionHp.result.sender.newQuantity
-  //   );
-  //   expect(userAndMonsterUpdated.user.character.hp).toBeGreaterThan(
-  //     initialHpUser
-  //   );
-  // });
-  // it("Item use - Poção de Mp (user is sender) : User update quantity of item and increase Mp", async () => {
-  //   const initialMpUser = user.character.mp;
+describe("monster as a sender/attacker", () => {
+  it("attacks the user with base attack", async () => {
+    const user = { ...mock.user };
+    const monster = { ...mock.monster };
+    const event = mock.eventMonsterIsSenderBaseAttack;
+    const userRepository = new UserRepositoryInMemory();
+    const monsterRepository = new MonsterRepositoryInMemory();
 
-  //   const userAndMonsterUpdated = await UpdateUserMonsterByBattleEvent[
-  //     "updateUserAndMonsterStats"
-  //   ]({
-  //     event: eventUserIsSenderItemUsePotionMp,
-  //     user: user,
-  //     monster: monster,
-  //   });
+    await userRepository.create({ user });
+    const updated = await UpdateUserMonsterByBattleEvent.execute({
+      event,
+      user,
+      monster,
+      monsterRepository,
+      userRepository,
+    });
+    const userDb = await userRepository.getById(user.id);
+    const monsterDb = await monsterRepository.getById(monster.id);
 
-  //   expect(userAndMonsterUpdated.user.character.items[1].quantity).toEqual(
-  //     eventUserIsSenderItemUsePotionMp.result.sender.newQuantity
-  //   );
-  //   expect(userAndMonsterUpdated.user.character.mp).toBeGreaterThan(
-  //     initialMpUser
-  //   );
-  // });
-  // it("Spell attack - Bola de fogo (user is sender) : User loses mp, monster loses hp", async () => {
-  //   const initialMpUser = user.character.mp;
-  //   const initialHpMonster = monster.hp;
-  //   const userAndMonsterUpdated = await UpdateUserMonsterByBattleEvent[
-  //     "updateUserAndMonsterStats"
-  //   ]({
-  //     event: eventUserIsSenderSpellAttack,
-  //     user: user,
-  //     monster: monster,
-  //   });
+    expect(updated.user.character.hp).toBeLessThan(mock.user.character.hp);
+    expect(userDb.character.hp).toBeLessThan(mock.user.character.hp);
+    expect(updated.monster.hp).toEqual(monster.hp);
+    expect(monsterDb.hp).toEqual(monster.hp);
+  });
+  it("wins battle", async () => {
+    const user = { ...mock.user };
+    const monster = { ...mock.monster };
+    const event = mock.eventMonsterIsSenderBaseAttack;
+    const userRepository = new UserRepositoryInMemory();
+    const monsterRepository = new MonsterRepositoryInMemory();
 
-  //   expect(userAndMonsterUpdated.user.character.mp).toBeLessThan(initialMpUser);
-  //   expect(userAndMonsterUpdated.monster.hp).toBeLessThan(initialHpMonster);
-  // });
+    await userRepository.create({ user });
+    const updated = await UpdateUserMonsterByBattleEvent.execute({
+      event,
+      user,
+      monster,
+      userRepository,
+      monsterRepository,
+    });
+    const userDb = await userRepository.getById(user.id);
+    const monsterDb = await monsterRepository.getById(monster.id);
+
+    expect(updated.user.character.xp).toBe(0);
+    expect(updated.user.character.deaths).toBeGreaterThan(
+      mock.user.character.deaths
+    );
+    expect(updated.user.character.level).toBe(1);
+
+    expect(userDb.character.xp).toEqual(updated.user.character.xp);
+    expect(userDb.character.deaths).toEqual(updated.user.character.deaths);
+    expect(updated.user.character.level).toEqual(updated.user.character.level);
+
+    expect(monsterDb.hp).toEqual(monster.hp);
+  });
 });
