@@ -26,7 +26,7 @@ export default class MapRepositoryInMemory implements IMapRepository {
           createdAt: new Date(),
         },
         {
-          id: "1234-token",
+          id: "12345-token",
           name: "Goblin",
           image: "https://cdn.vectorstock.com/i/1000v/01/10/rat-vector-2370110.jpg",
           level: 5,
