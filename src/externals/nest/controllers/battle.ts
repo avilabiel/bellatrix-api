@@ -22,6 +22,7 @@ export class BattleController {
         battleId: payload.id,
         battleRepository: config.repositories.battleRepository,
         userRepository: config.repositories.userRepository,
+        monsterRepository: config.repositories.monsterRepository,
         event,
       });
     } catch (error) {
