@@ -22,7 +22,7 @@ export default class MonsterRepositoryInMemory implements MonsterRepository {
       createdAt: new Date(),
     },
     {
-      id: "1234-token",
+      id: "12345-token",
       name: "Goblin",
       image: "https://cdn.vectorstock.com/i/1000v/01/10/rat-vector-2370110.jpg",
       level: 5,
@@ -42,5 +42,26 @@ export default class MonsterRepositoryInMemory implements MonsterRepository {
 
   list(): Promise<Monster[]> {
     return Promise.resolve(this.monsters);
+  }
+
+  getById(id: string): Promise<Monster | null> {
+    const allMonsters = this.list();
+    const monster = this.monsters.find((m) => m.id === id);
+    if (monster) {
+      return Promise.resolve(new Monster(monster));
+    }
+
+    return Promise.resolve(null);
+  }
+
+  update(monster: Monster): Promise<Monster> {
+    const index = this.monsters.findIndex((m) => m.id === monster.id);
+
+    if (index !== -1) {
+      // method findIndex return -1 if not found
+      this.monsters[index] = monster;
+    }
+
+    return Promise.resolve(monster);
   }
 }
