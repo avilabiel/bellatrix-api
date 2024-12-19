@@ -1,3 +1,4 @@
+import IMonsterRepository from "@/app/contracts/i-monster-repository";
 import IUseCase from "@/app/contracts/i-use-case";
 import IUserRepository from "@/app/contracts/i-user-repository";
 import BattleEvent, { ACTION_TYPE } from "@/entities/BattleEvent";
@@ -7,22 +8,28 @@ import User from "@/entities/User";
 class UpdateUserAndMonsterByBattleEvent implements IUseCase {
   async execute({
     userRepository,
+    monsterRepository,
     event,
     monster,
     user,
   }: {
     userRepository: IUserRepository;
+    monsterRepository: IMonsterRepository;
     event: BattleEvent;
     monster: Monster;
     user: User;
-  }): Promise<User> {
-    const userAndMonsterUpdated = await this.updateUserAndMonsterStats({
+  }): Promise<{ user: User; monster: Monster }> {
+    const updatedEntities = await this.updateUserAndMonsterStats({
       event,
       user,
       monster,
     });
 
-    return await userRepository.update(userAndMonsterUpdated.user);
+    const userDbUpdate = await userRepository.update(updatedEntities.user);
+    const monsterDbUpdate = await monsterRepository.update(
+      updatedEntities.monster
+    );
+    return { user: userDbUpdate, monster: monsterDbUpdate };
   }
 
   // Monstro sendo atualizad
