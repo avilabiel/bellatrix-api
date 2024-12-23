@@ -3,4 +3,7 @@ dist
 coverage
 coverage/*
 /coverage
-.env
+
+*.env
+*.env.local
+*.env.staging
