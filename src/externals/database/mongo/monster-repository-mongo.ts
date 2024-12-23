@@ -1,16 +1,18 @@
 import mongoose from "mongoose";
 import IMonsterRepository from "@/app/contracts/i-monster-repository";
 import Monster from "@/entities/Monster";
+// import MonsterModel, { monsterSchema } from "./models/monster";
 
 class MonsterRepositoryMongo implements IMonsterRepository {
-  private connection: mongoose.Connection;
+  constructor() {}
 
-  constructor() {
-    this.connection = mongoose.createConnection(process.env.MONGO_URL);
-  }
+  async list(): Promise<Monster[]> {
+    console.log("MONGO URL", process.env.MONGO_URL);
+    // await mongoose.connect(process.env.MONGO_URL);
+    return [];
 
-  list(): Promise<Monster[]> {
-    return Promise.resolve([]);
+    // Convert to Monster entity
+    // return monsterList.map((monster) => new Monster(monster));
   }
 }
 
