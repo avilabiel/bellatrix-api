@@ -26,10 +26,8 @@ class UpdateUserAndMonsterByBattleEvent implements IUseCase {
     });
 
     const userDbUpdate = await userRepository.update(updatedEntities.user);
-    const monsterDbUpdate = await monsterRepository.update(
-      updatedEntities.monster
-    );
-    return { user: userDbUpdate, monster: monsterDbUpdate };
+
+    return { user: userDbUpdate, monster: updatedEntities.monster };
   }
 
   // Monstro sendo atualizad

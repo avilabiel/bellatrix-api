@@ -33,12 +33,12 @@ const event = {
 
 describe("CreateBattleEvent/execute", () => {
   it("should return the created battle event", async () => {
-    const { id: userId } = await CreateUser["execute"]({
+    const { id: userId } = await CreateUser.execute({
       nick: "r20",
       userRepository,
     });
 
-    const { id: battleId } = await UserWalk["execute"]({
+    const { id: battleId } = await UserWalk.execute({
       userId,
       mapId: "1",
       mapRepository,
