@@ -6,9 +6,9 @@ services:
       context: ./
       dockerfile: Dockerfile
     environment:
-      DATABASE_URI: mongodb+srv://juan:juan@cluster0.keids.mongodb.net/
+      DATABASE_URI: mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}@cluster0.keids.mongodb.net/
     ports:
-      - '4000:4000'
+      - '3000:3000'
     depends_on:
       - database
   database:
@@ -18,5 +18,5 @@ services:
     ports:
       - '27017:27017'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: juan
-      MONGO_INITDB_ROOT_PASSWORD: juan
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ATLAS_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ATLAS_PASSWORD}
