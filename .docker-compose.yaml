@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  app:
+    container_name: backend
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URI: mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}@cluster0.keids.mongodb.net/
+    ports:
+      - '3000:3000'
+    depends_on:
+      - database
+  database:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ATLAS_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ATLAS_PASSWORD}
